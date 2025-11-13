@@ -1,0 +1,59 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+.python-version
+
+# ---- Virtual Environment ----
+venv/
+env/
+.env
+.env.*
+.venv
+ENV/
+env.bak/
+venv.bak/
+
+# ---- IDEs ----
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ---- Bytecode / Packaging ----
+build/
+dist/
+*.egg-info/
+*.egg
+*.manifest
+*.spec
+*.log
+*.tmp
+*.bak
+
+# ---- OS / Misc ----
+.DS_Store
+Thumbs.db
+.pytest_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.sqlite3
+
+# ---- Docker ----
+*.pid
+.docker/
+docker-compose.override.yml
+
+# ---- Jupyter ----
+.ipynb_checkpoints/
+
+# ---- Local Databases ----
+data/
+db.sqlite3
+
+# ---- Node / Frontend (if added later) ----
+node_modules/
+.next/
+.cache/
