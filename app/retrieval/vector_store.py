@@ -9,6 +9,10 @@ logger = logging.getLogger(__name__)
 
 
 def get_qdrant_client():
+    if not settings.QDRANT_URL or "your_qdrant_cloud_url_here" in settings.QDRANT_URL:
+        logger.warning("QDRANT_URL is not set or is a placeholder. Using local in-memory instance.")
+        return QdrantClient(":memory:")
+    
     return QdrantClient(
         url=settings.QDRANT_URL,
         api_key=settings.QDRANT_API_KEY,
@@ -22,7 +26,7 @@ async def ensure_collection():
     if settings.QDRANT_COLLECTION_NAME not in names:
         client.create_collection(
             collection_name=settings.QDRANT_COLLECTION_NAME,
-            vectors_config=VectorParams(size=768, distance=Distance.COSINE),
+            vectors_config=VectorParams(size=3072, distance=Distance.COSINE),
         )
         logger.info(f"Created Qdrant collection: {settings.QDRANT_COLLECTION_NAME}")
 

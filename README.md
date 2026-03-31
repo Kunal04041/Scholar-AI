@@ -1,163 +1,77 @@
-# 🎓 Scholar-AI — Multi-Agent Research Assistant
+# Scholar-AI: Multi-Agent Research Assistant
 
-> A production-grade, fully cloud-based AI research assistant powered by multi-agent orchestration, hybrid retrieval, and real-time evaluation.
+Scholar-AI is a high-performance, multi-agent RAG (Retrieval-Augmented Generation) system built to analyze and synthesize information from documents with professional-grade accuracy.
 
-![Python](https://img.shields.io/badge/Python-3.11-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.110-green)
-![LangChain](https://img.shields.io/badge/LangChain-0.2-orange)
-![Gemini](https://img.shields.io/badge/Gemini-1.5Flash-purple)
-![Qdrant](https://img.shields.io/badge/Qdrant-Cloud-red)
+## Key Features
+- **Multi-Agent Orchestration**: Uses **LangGraph** to coordinate between a **Planner** (query decomposition), **Retriever** (semantic & keyword search), and **Critic** (synthesis & citation).
+- **Hybrid Search & Reranking**: Combines **Qdrant Vector Search** with **BM25 Keyword Search** using **Reciprocal Rank Fusion (RRF)** for optimal document retrieval.
+- **Web & File Ingestion**: Seamlessly ingest data from **public URLs**, webpages, and directly uploaded **PDFs**.
+- **RAGAS Evaluation**: Built-in **Faithfulness** and **Relevancy** scoring powered by **Gemini 3.1** as the judge model.
+- **Production UI**: Streamlit dashboard with real-time streaming, source visualization, and evaluation toggles.
+- **Robust Persistence**: **Supabase** handles session history and document tracking.
 
----
+## Architecture
 
-## 🧠 Architecture
+```mermaid
+graph TD
+    User([User Query]) --> Planner["Planner Agent (Gemini 3.1)"]
+    Planner -->|Sub-questions| Retriever["Retriever Agent (LangGraph)"]
+    
+    subgraph Ingestion
+        Docs[PDFs / URLs] --> Splitter[Text Splitter]
+        Splitter --> Embedder["Gemini Embedding 2 (3072d)"]
+        Embedder --> Qdrant[(Qdrant Cloud)]
+    end
 
-```
-User Query
-    │
-    ▼
-┌─────────────────────────────────┐
-│        Planner Agent            │  ← Breaks query into sub-tasks
-└────────────┬────────────────────┘
-             │
-    ┌────────┴────────┐
-    ▼                 ▼
-┌────────────┐  ┌─────────────┐
-│ Retriever  │  │  Web Search │  ← Hybrid BM25 + Vector Search
-│   Agent    │  │   Agent     │
-└─────┬──────┘  └──────┬──────┘
-      │                │
-      └──────┬──────────┘
-             ▼
-    ┌─────────────────┐
-    │  Critic Agent   │  ← Evaluates & re-ranks answers
-    └────────┬────────┘
-             ▼
-    ┌─────────────────┐
-    │ Streaming API   │  ← FastAPI SSE streaming
-    └────────┬────────┘
-             ▼
-    ┌─────────────────┐
-    │ Streamlit UI    │
-    └─────────────────┘
-```
+    subgraph Hybrid Search & Reranking
+        Retriever --> Qdrant
+        Retriever --> BM25[BM25 Keyword Search]
+        Qdrant --> RRF[RRF Fusion]
+        BM25 --> RRF
+    end
+    
+    RRF -->|Ranked Chunks| Critic["Critic Agent (Gemini 3.1)"]
+    Critic -->|Full Answer + Citations| Final([Streamlit UI])
+    
+    subgraph Evaluation
+        Final --> RAGAS["RAGAS (Gemini Judge)"]
+        RAGAS -->|Scores| Final
+    end
 
----
-
-## ✨ Features
-
-- 🤖 **Multi-Agent Pipeline** — Planner, Retriever, Critic agents using LangGraph
-- 🔍 **Hybrid Retrieval** — BM25 keyword + Qdrant vector search combined
-- 📊 **RAGAS Evaluation** — Live faithfulness, relevancy & recall scores
-- ⚡ **Streaming Responses** — FastAPI SSE with sub-2s time-to-first-token
-- 🔗 **Inline Citations** — Every answer chunk cites its source document
-- 🌐 **100% Cloud** — Gemini API + Qdrant Cloud + Render + Streamlit Cloud
-- 🔄 **Dual LLM** — Gemini 1.5 Flash (primary) + Groq Llama 3.1 70B (fallback)
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| LLM | Google Gemini 1.5 Flash |
-| LLM Fallback | Groq (Llama 3.1 70B) |
-| Embeddings | Gemini Embedding API |
-| Vector DB | Qdrant Cloud |
-| Orchestration | LangGraph |
-| Backend | FastAPI + Python 3.11 |
-| Storage | Supabase |
-| Frontend | Streamlit |
-| Evaluation | RAGAS |
-| Deployment | Render + Streamlit Cloud |
-| CI/CD | GitHub Actions |
-
----
-
-## 🚀 Quick Start
-
-### 1. Clone & Install
-```bash
-git clone https://github.com/Kunal04041/Scholar-AI.git
-cd Scholar-AI
-pip install -r requirements.txt
+    subgraph Persistence
+        Planner -.-> Supabase[(Supabase)]
+        Final -.-> Supabase
+    end
 ```
 
-### 2. Set Environment Variables
-```bash
-cp .env.example .env
-# Fill in your API keys in .env
-```
+## Technology Stack
+- **LLM**: Gemini 3.1 Flash (Generation)
+- **Embeddings**: Gemini Embedding 2 (3072 dimensions)
+- **Vector DB**: Qdrant Cloud (with local in-memory fallback)
+- **Database**: Supabase (PostgreSQL)
+- **Framework**: FastAPI (Backend) & Streamlit (Frontend)
+- **Orchestration**: LangChain & LangGraph
 
-### 3. Run Backend
-```bash
-uvicorn app.main:app --reload
-```
+## Ingestion Strategy
+- **Chunking**: Recursive Character Text Splitter (`chunk_size: 1000`, `overlap: 100`) tuned for academic and technical PDFs.
+- **Metadata**: Sources are preserved and cited inline as `[Source: filename]`.
 
-### 4. Run Frontend
-```bash
-streamlit run frontend/app.py
-```
+## Getting Started with Docker
 
----
+1. **Clone the repository**
+2. **Setup your `.env`** (see [.env.example](.env.example))
+3. **Run with Docker Compose**:
+   ```bash
+   docker-compose up --build
+   ```
+4. **Access the App**:
+   - Frontend: `http://localhost:8501`
+   - Backend: `http://localhost:8000`
 
-## 📁 Project Structure
+## Local Development
 
-```
-Scholar-AI/
-├── app/
-│   ├── main.py              # FastAPI entry point
-│   ├── api/
-│   │   ├── routes.py        # API endpoints
-│   │   └── schemas.py       # Pydantic models
-│   ├── agents/
-│   │   ├── planner.py       # Planner agent
-│   │   ├── retriever.py     # Retriever agent
-│   │   └── critic.py        # Critic/evaluator agent
-│   ├── core/
-│   │   ├── config.py        # Settings & env vars
-│   │   └── llm.py           # LLM client (Gemini + Groq)
-│   ├── retrieval/
-│   │   ├── vector_store.py  # Qdrant operations
-│   │   ├── bm25.py          # BM25 keyword search
-│   │   └── hybrid.py        # Hybrid retrieval fusion
-│   ├── ingestion/
-│   │   ├── loader.py        # PDF/URL document loader
-│   │   └── chunker.py       # Smart text chunking
-│   └── evaluation/
-│       └── ragas_eval.py    # RAGAS evaluation pipeline
-├── frontend/
-│   └── app.py               # Streamlit UI
-├── tests/
-│   ├── test_agents.py
-│   └── test_retrieval.py
-├── .github/
-│   └── workflows/
-│       └── ci.yml           # GitHub Actions CI
-├── .env.example
-├── requirements.txt
-├── Dockerfile
-└── render.yaml              # Render deployment config
-```
-
----
-
-## 📈 Evaluation Results
-
-| Metric | Score |
-|--------|-------|
-| Faithfulness | 🔄 Run `evaluate.py` to generate |
-| Answer Relevancy | 🔄 Run `evaluate.py` to generate |
-| Context Recall | 🔄 Run `evaluate.py` to generate |
-
----
-
-## 🔑 Environment Variables
-
-See `.env.example` for all required keys.
-
----
-
-## 📄 License
-
-MIT License — feel free to use and adapt.
+1. Create a virtual environment: `python -m venv venv`
+2. Activate: `.\venv\Scripts\activate` (Windows) or `source venv/bin/activate` (Mac/Linux)
+3. Install: `pip install -r requirements.txt`
+4. Run Backend: `uvicorn app.main:app --reload`
+5. Run Frontend: `streamlit run frontend/app.py`

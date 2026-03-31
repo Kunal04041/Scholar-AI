@@ -8,9 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 async def load_document(url: Optional[str] = None, text: Optional[str] = None, source: str = "unknown") -> List[dict]:
-    """Load documents from URL or raw text."""
     docs = []
-
     if text:
         docs.append({"content": text, "source": source})
 

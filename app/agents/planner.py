@@ -26,17 +26,17 @@ async def run_pipeline(
     llm = get_llm()
     logger.info(f"[Planner] Processing query: {query}")
 
-    # Step 1: Planner breaks query into sub-questions
     planner_chain = PLANNER_PROMPT | llm
     plan_response = await planner_chain.ainvoke({"query": query})
 
+    sub_questions = [query]
     try:
         import json
         sub_questions = json.loads(plan_response.content)
         if not isinstance(sub_questions, list):
             sub_questions = [query]
     except Exception:
-        sub_questions = [query]
+        pass
 
     logger.info(f"[Planner] Sub-questions: {sub_questions}")
 

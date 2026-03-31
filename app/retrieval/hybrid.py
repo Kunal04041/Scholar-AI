@@ -14,8 +14,7 @@ async def hybrid_search(query: str, top_k: int = 5) -> List[dict]:
     vector_results = await vector_search(query, top_k=top_k)
     bm25_results = bm25_search(query, top_k=top_k)
 
-    # RRF scoring
-    k = 60  # RRF constant
+    k = 60
     scores = {}
 
     for rank, doc in enumerate(vector_results):

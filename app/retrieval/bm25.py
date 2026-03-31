@@ -4,13 +4,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# In-memory BM25 index (rebuilt on startup from Qdrant scroll)
 _bm25_index = None
 _bm25_corpus = []
 
 
 def build_bm25_index(documents: List[dict]):
-    """Build BM25 index from a list of document dicts with 'content' key."""
+    """Build BM25 index from document content."""
     global _bm25_index, _bm25_corpus
     _bm25_corpus = documents
     tokenized = [doc["content"].lower().split() for doc in documents]

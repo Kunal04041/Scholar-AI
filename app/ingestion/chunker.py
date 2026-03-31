@@ -1,4 +1,4 @@
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from app.core.config import settings
 from typing import List
 import logging
@@ -7,7 +7,6 @@ logger = logging.getLogger(__name__)
 
 
 def chunk_documents(docs: List[dict]) -> List[dict]:
-    """Split documents into overlapping chunks."""
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=settings.CHUNK_SIZE,
         chunk_overlap=settings.CHUNK_OVERLAP,

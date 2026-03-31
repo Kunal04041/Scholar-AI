@@ -16,7 +16,7 @@ def get_llm(use_fallback: bool = False):
             temperature=0.2,
         )
     return ChatGoogleGenerativeAI(
-        model="gemini-1.5-flash",
+        model="gemini-3-flash-preview",
         google_api_key=settings.GEMINI_API_KEY,
         temperature=0.2,
         streaming=True,
@@ -25,7 +25,11 @@ def get_llm(use_fallback: bool = False):
 
 def get_embeddings():
     """Returns Gemini Embedding model."""
+    if not settings.GEMINI_API_KEY or "your_gemini_api_key_here" in settings.GEMINI_API_KEY:
+        logger.error("GEMINI_API_KEY is not set or is a placeholder.")
+        raise ValueError("GEMINI_API_KEY is missing. Please set it in the .env file.")
+        
     return GoogleGenerativeAIEmbeddings(
-        model="models/embedding-001",
+        model="models/gemini-embedding-2-preview",
         google_api_key=settings.GEMINI_API_KEY,
     )
