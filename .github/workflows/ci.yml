@@ -23,8 +23,15 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Environment check
+        run: |
+          echo "Checking environment..."
+          python --version
+          pip list | grep -E "pytest|langchain|ragas"
+
       - name: Run tests
         env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           QDRANT_URL: ${{ secrets.QDRANT_URL }}
@@ -32,4 +39,4 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
-          pytest tests/ -v
+          pytest -v
